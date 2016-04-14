@@ -14,7 +14,7 @@ import org.lipn.som.utils.DataGenerator
 
 
 object RunSom{
-  
+
     def main(args:Array[String]) {
       run(
           sparkMaster = args(0),
@@ -30,64 +30,96 @@ object RunSom{
           sep = args(10),
           initMap = args(11).toInt, //0: initialisation aleatoire
           initMapFile = args(12)
-      )  
+      )
     }
-  
+
   def run(
     sparkMaster: String,
     intputFile: String,
     outputDir: String,
     execName: String = "RunSom",
-    nbRow: Int = 10, 
-    nbCol: Int = 10, 
-    tmin: Double = 0.9, 
+    nbRow: Int = 10,
+    nbCol: Int = 10,
+    tmin: Double = 0.9,
+    tmax: Double = 8,
+    convergeDist: Double = -0.001,
+    maxIter: Int = 50,
+    sep : String = ";",
+    initMap: Int = 0,
+    initMapFile : String = ""
+    ) = {
+    exec(
+      intputFile,
+      outputDir,
+      nbRow,
+      nbCol,
+      tmin,
+      tmax,
+      convergeDist,
+      maxIter,
+      sep,
+      initMap,
+      initMapFile
+    )(
+      {
+        val sparkConf = new SparkConf().setAppName(execName)
+        sparkConf.setMaster(sparkMaster)
+        new SparkContext(sparkConf)
+      },
+      true
+    )
+  }
+
+  def exec(
+    intputFile: String,
+    outputDir: String,
+    nbRow: Int = 10,
+    nbCol: Int = 10,
+    tmin: Double = 0.9,
     tmax: Double = 8,
     convergeDist: Double = -0.001,
 		maxIter: Int = 50,
 		sep : String = ";",
 		initMap: Int = 0,
 		initMapFile : String = ""
-    ) = {
-    val sparkConf = new SparkConf().setAppName(execName)
-		sparkConf.setMaster(sparkMaster)
-		val sc = new SparkContext(sparkConf)
+    )(sc:SparkContext, stop:Boolean=false) = {
 
     val somOptions = Map(
-    		"clustering.som.nbrow" -> nbRow.toString, 
+    		"clustering.som.nbrow" -> nbRow.toString,
     		"clustering.som.nbcol" -> nbCol.toString,
     		"clustering.som.tmin" -> tmin.toString,
     		"clustering.som.tmin" -> tmax.toString,
     		"clustering.som.initMap" -> initMap.toString,
-    		"clustering.som.initMapFile" -> initMapFile.toString,   
+    		"clustering.som.initMapFile" -> initMapFile.toString,
     		"clustering.som.separator" -> sep.toString
     		)
-	    	
-	  val trainingDatasetId = sc.textFile(intputFile).map(x => new Vector(x.split(sep).map(_.toDouble))).cache() 
-	  
+
+	  val trainingDatasetId = sc.textFile(intputFile).map(x => new Vector(x.split(sep).map(_.toDouble))).cache()
+
 	  val trainingDataset = trainingDatasetId.map{ e =>
-	     new Vector(e.elements.take(e.length - 1)) 
+	     new Vector(e.elements.take(e.length - 1))
 	  }.cache()
-	    
- 
+
+
 	  println(s"nbRow: ${trainingDataset.count()}")
-	    		
+
 		val model = trainingAndPrint(new SomTrainerA, trainingDataset, somOptions, maxIter, convergeDist)
 		print("le model est : "+model)
 		sc.parallelize(model.prototypes).saveAsTextFile(outputDir+"/model")
-	    	
-		
-	  // transformer un point de données en un objet contenant la données et son identifiant 
+
+
+	  // transformer un point de données en un objet contenant la données et son identifiant
 	  val trainingDatasetObj = trainingDatasetId.map{ e =>
 	    val dataPart = e.elements.take(e.length - 1) // the last column represents the identifier
 	    val id = e.elements(e.length - 1).toInt
 	    new pointObj(new Vector(dataPart), id)
 	  }.cache()
-	  
-	  trainingDataset.unpersist(true) 
-	  
+
+	  trainingDataset.unpersist(true)
+
 		model.assign(trainingDatasetObj).saveAsTextFile(outputDir+"/assignDatas")
-		
-		sc.stop()
+
+		if (stop) sc.stop()
   }
 
 
@@ -119,8 +151,8 @@ object RunSom{
   		println("-- NbIteration : " + trainer.getLastIt)
   		println("-- Training duration : " + trainer.getLastTrainingDuration)
   		println("-- The model : " + model)
-  		
-  		
+
+
   		model
 	}
 }
