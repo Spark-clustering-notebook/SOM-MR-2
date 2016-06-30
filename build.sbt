@@ -2,7 +2,7 @@ organization := "spartakus"
 
 name := "SOM-MR"
 
-version := "1.1"
+version := "1.01"
 
 scalaVersion := "2.10.5"
 
