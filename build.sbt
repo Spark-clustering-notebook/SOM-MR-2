@@ -2,7 +2,7 @@ organization := "spartakus"
 
 name := "SOM-MR"
 
-version := "1.0"
+version := "1.1"
 
 scalaVersion := "2.10.5"
 
@@ -14,3 +14,6 @@ libraryDependencies ++= Seq(
 	"org.scalatest" %% "scalatest" % "2.2.4" % "test"
 )
 
+bintrayOrganization := Some("spark-clustering-notebook")
+
+bintrayEnsureLicenses := false
