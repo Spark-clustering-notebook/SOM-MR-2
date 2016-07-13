@@ -15,6 +15,8 @@ Some Spark implementations of clustering algorithms.
 	
 	1-Tugdual Sarazin, Mustapha Lebbah, Hanane Azzag: Biclustering using Spark-MapReduce. IEEE BigData Conference 2014:58-60
 	2- Tugdual Sarazin, Hanane Azzag, and Mustapha Lebbah. 2014. SOM Clustering Using Spark-MapReduce. In Proceedings of the 2014 IEEE International Parallel & Distributed Processing Symposium Workshops (IPDPSW '14). IEEE Computer Society, Washington, DC, USA, 1727-1734. DOI=10.1109/IPDPSW.2014.192 
+        
+         -Part of this work was done with Altic and Smokewatchers
 		 
 	- The code is a research product and is provided without any expressed
 	  or implied warranty. There is no warranty of any kind concerning the
